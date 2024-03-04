@@ -9,7 +9,7 @@ Sources:
  - https://github.com/McBaws/comp
 
 Requirements:
-    - Python 3.10+
+    - Python 3.10+ (tested on 3.11.8)
     - vapoursynth (tested on R65)
 
     - python packages: requests, rich, vs-tools, requests-toolbelt
@@ -33,6 +33,7 @@ RANDOM_FRAMES = 3 # Random (non dark/light) scenes to capture
 # - All fields are required
 CUSTOM_FRAMES = []
 FRAMES_TYPE = None # Can be I, P, B or None to take all (or false to disable frames type filtering) (https://en.wikipedia.org/wiki/Video_compression_picture_types)
+FRAME_INFOS = True # Display frame informations
 
 UPSCALING = True # Upscale the captured scenes to the maximum resolution of videos
 UPSCALING_RESOLUTION = None # Set upscale resolution or None to set to the upper available
@@ -47,7 +48,7 @@ SLOWPICS_COLLECTION = None # Slowpics collection name
 KEEP_IMAGES = False # Keep the original after upload
 KEEP_IMAGES_PATH = None # Path to save images
 
-VS_RAM_LIMIT = 300 # Ram allowed to vapoursynth (in MB)
+VS_RAM_LIMIT = 3000 # Ram allowed to vapoursynth (in MB)
 
 ############################################################################################################################################################
 ############################################################################################################################################################
@@ -141,7 +142,7 @@ def save_frame(filepath: str | Path, frame_stats: dict[str, Any], quality: Optio
     clip = core.lsmas.LWLibavSource(str(filepath))
 
     filename = Path(filepath).name
-    output_dir = (TEMP_DIR if not KEEP_IMAGES or KEEP_IMAGES_PATH else Path(KEEP_IMAGES_PATH)).absolute()
+    output_dir = (TEMP_DIR if not KEEP_IMAGES or not KEEP_IMAGES_PATH else Path(KEEP_IMAGES_PATH)).absolute()
     output = output_dir / f'{hashlib.md5(filename.encode("utf-8")).digest().hex()}-{frame_stats.get("index")}.png'
 
     if not output.parent.exists():
@@ -171,12 +172,13 @@ def save_frame(filepath: str | Path, frame_stats: dict[str, Any], quality: Optio
         format=RGB24, matrix_in=matrix, dither_type='error_diffusion'
     )
 
-    clip = clip.sub.Subtitle(
-        text=text,
-        start=frame_stats.get('index'),
-        end=frame_stats.get('index') + 1,
-        style=font_style
-    )
+    if FRAME_INFOS:
+        clip = clip.sub.Subtitle(
+            text=text,
+            start=frame_stats.get('index'),
+            end=frame_stats.get('index') + 1,
+            style=font_style
+        )
 
     clip.imwri.Write(
         'PNG',
@@ -190,6 +192,10 @@ def save_frame(filepath: str | Path, frame_stats: dict[str, Any], quality: Optio
 def main():
     console = Console()
     files_to_process = []
+
+    if not KEEP_IMAGES and not SLOWPICS_ENABLED:
+        console.print('[red]KEEP_IMAGES is not set to false but SLOWPICS_ENABLED is set to false too, images are not saved anywere!')
+        exit(1)
 
     if KEEP_IMAGES and not KEEP_IMAGES_PATH:
         console.print('[red]KEEP_IMAGES set to true but no KEEP_IMAGES_PATH set!')
@@ -415,9 +421,9 @@ def main():
 
                         with image.open('rb') as f:
                             fields = {
-                                "collectionUuid": data.get('collectionUuid'),
-                                "imageUuid": image_id,
-                                "file": (image.name, f, 'image/png'),
+                                'collectionUuid': data.get('collectionUuid'),
+                                'imageUuid': image_id,
+                                'file': (image.name, f, 'image/png'),
                                 'browserId': fields.get('browserId'),
                             }
 
