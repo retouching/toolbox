@@ -17,7 +17,7 @@ Requirements:
 
 # Files dict list
 # Example: r'file_to_compare.mkv'
-FILE = r'C:\Users\Sylvain\Documents\Travail\Dev\toolbox\Boku no Kokoro no Yabai Yatsu S2 - 09 - 1080p WEB H.264 -WeebGakuin (B-Global).mkv'
+FILE = r''
 
 FRAMES_COUNT = 3
 # Custom frames to use (if any)
