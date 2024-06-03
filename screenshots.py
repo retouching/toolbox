@@ -40,8 +40,6 @@ SLOWPICS_EXPIRATION = 1 # Slowpics post expiration time in days (0 = disable)
 KEEP_IMAGES = False # Keep the original after upload
 KEEP_IMAGES_PATH = None # Path to save images
 
-VS_RAM_LIMIT = 3000 # Ram allowed to vapoursynth (in MB)
-
 ############################################################################################################################################################
 ############################################################################################################################################################
 ############################################################################################################################################################
@@ -64,7 +62,6 @@ from rich.console import Console
 import vstools
 
 
-core.max_cache_size = VS_RAM_LIMIT
 TEMP_DIR = Path(__file__).parent / '.temp'
 
 
